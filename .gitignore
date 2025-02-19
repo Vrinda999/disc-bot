@@ -1,0 +1,4 @@
+*.exe
+go.mod
+go.sum
+config.json
