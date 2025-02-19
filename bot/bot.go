@@ -3,19 +3,23 @@ package bot
 import (
 	"fmt"
 	"iconic-lines/config"
+	"log"
 
 	"github.com/bwmarrin/discordgo"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var BotID string
 var goBot *discordgo.Session
+var db *mongo.Database // Global database variable
 
-func Start() {
+func Start(client *mongo.Client) {
+	db = client.Database("discordbot") // Assign the database
+
 	var err error
 	goBot, err = discordgo.New("Bot " + config.Token)
 	if err != nil {
-		fmt.Println("Error creating bot session:", err.Error())
-		return
+		log.Fatal("Error creating bot session:", err.Error())
 	}
 
 	// Set Intents BEFORE opening connection
@@ -33,9 +37,9 @@ func Start() {
 	// Open connection
 	err = goBot.Open()
 	if err != nil {
-		fmt.Println("Error opening connection:", err.Error())
-		return
+		log.Fatal("Error opening connection:", err.Error())
 	}
+
 	fmt.Println("Bot is Running!")
 }
 
@@ -47,6 +51,15 @@ func messageHandler(sess *discordgo.Session, msg *discordgo.MessageCreate) {
 
 	if msg.Content == "ping" {
 		sess.ChannelMessageSend(msg.ChannelID, "pong")
+	}
+	if msg.Content == "!store" {
+		StoreMessage(db, msg.Content, msg.Author.Username)
+		sess.ChannelMessageSend(msg.ChannelID, "Message stored!")
+	}
+
+	if msg.Content == "!respond" {
+		message := GetRandomMessage(db)
+		sess.ChannelMessageSend(msg.ChannelID, message)
 	}
 
 	fmt.Println("Received message:", msg.Content)
