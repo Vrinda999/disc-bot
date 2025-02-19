@@ -14,7 +14,7 @@ var goBot *discordgo.Session
 var db *mongo.Database // Global database variable
 
 func Start(client *mongo.Client) {
-	db = client.Database("discordbot") // Assign the database
+	db = client.Database("iconic-lines") // Assign the database
 
 	var err error
 	goBot, err = discordgo.New("Bot " + config.Token)
@@ -49,15 +49,17 @@ func messageHandler(sess *discordgo.Session, msg *discordgo.MessageCreate) {
 		return
 	}
 
+	// Console log the received message
+	fmt.Printf("📩 Received Message: \"%s\" from %s\n", msg.Content, msg.Author.Username)
+
 	if msg.Content == "ping" {
 		sess.ChannelMessageSend(msg.ChannelID, "pong")
-	}
-	if msg.Content == "!store" {
-		StoreMessage(db, msg.Content, msg.Author.Username)
-		sess.ChannelMessageSend(msg.ChannelID, "Message stored!")
-	}
 
-	if msg.Content == "!respond" {
+	} else if msg.Content[:6] == "!store" {
+		StoreMessage(db, msg.Content[6:], msg.Author.Username)
+		sess.ChannelMessageSend(msg.ChannelID, "Message Stored ✅")
+
+	} else if msg.Content[:8] == "!respond" {
 		message := GetRandomMessage(db)
 		sess.ChannelMessageSend(msg.ChannelID, message)
 	}

@@ -48,7 +48,7 @@ func ConnectDB() *mongo.Client {
 	fmt.Println("Connected to MongoDB!")
 
 	// Assign the database
-	DB = client.Database("discordbot")
+	DB = client.Database("iconic-lines")
 
 	return client
 }
